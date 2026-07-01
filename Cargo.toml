@@ -1,0 +1,17 @@
+[package]
+name = "worktree"
+version = "0.1.0"
+edition = "2021"
+description = "A small CLI for managing git worktrees next to the current repository"
+license = "MIT"
+
+[[bin]]
+name = "wt"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"
