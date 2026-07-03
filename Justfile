@@ -20,8 +20,14 @@ test:
 fmt:
     cargo fmt
 
-# Check without producing a release binary
+# Run the full local verification suite
 check:
+    cargo fmt -- --check
+    cargo clippy --all-targets -- -D warnings
+    cargo test
+
+# Check without producing a release binary
+cargo-check:
     cargo check
 
 # Install wt into Cargo's bin directory
