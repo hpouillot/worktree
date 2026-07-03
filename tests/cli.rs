@@ -130,6 +130,32 @@ fn create_from_subdirectory_saves_relative_root_for_path() {
 }
 
 #[test]
+fn create_refuses_existing_branch_without_existing_flag() {
+    let repo = TestRepo::new();
+    run_git(&repo.root, &["branch", "feature"]);
+
+    let output = run_wt(&repo.root, &["create", "feature", "--no-open"]);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr)
+        .contains("branch feature already exists; pass --existing to reuse it"));
+    assert!(!repo.managed_worktree("feature").exists());
+}
+
+#[test]
+fn create_refuses_missing_branch_with_existing_flag() {
+    let repo = TestRepo::new();
+
+    let output = run_wt(
+        &repo.root,
+        &["create", "missing", "--existing", "--no-open"],
+    );
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr)
+        .contains("branch missing does not exist; omit --existing to create it"));
+    assert!(!repo.managed_worktree("missing").exists());
+}
+
+#[test]
 fn create_can_reuse_an_existing_branch() {
     let repo = TestRepo::new();
     let worktree = repo.managed_worktree("hotfix-wt");

@@ -88,6 +88,8 @@ Reuse an existing branch:
 wt create hotfix --branch hotfix/issue-123 --existing
 ```
 
+Existing branches are only reused when `--existing` is passed; otherwise `wt create` fails instead of silently checking out that branch.
+
 List managed worktrees:
 
 ```sh

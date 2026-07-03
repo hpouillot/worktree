@@ -82,14 +82,18 @@ pub fn create(ctx: &CommandContext<'_>, options: CreateOptions<'_>) -> Result<()
 
     let open_root = resolve_root_arg(current_worktree_root, cwd, root)?;
     let branch_preexisted = branch_exists(repo_root, branch)?;
-
-    if existing || branch_preexisted {
-        git(repo_root, ["worktree", "add", path_str(&path)?, branch])?;
-    } else {
-        git(
+    match (existing, branch_preexisted) {
+        (true, true) => git(repo_root, ["worktree", "add", path_str(&path)?, branch])?,
+        (true, false) => {
+            bail!("branch {branch} does not exist; omit --existing to create it")
+        }
+        (false, true) => {
+            bail!("branch {branch} already exists; pass --existing to reuse it")
+        }
+        (false, false) => git(
             repo_root,
             ["worktree", "add", "-b", branch, path_str(&path)?, base],
-        )?;
+        )?,
     }
 
     if let Err(err) = save_worktree_root(repo_root, name, open_root.as_deref()) {
