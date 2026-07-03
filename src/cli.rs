@@ -17,13 +17,13 @@ pub enum Commands {
     Create {
         /// Worktree name. Also used as the branch name unless --branch is set.
         name: String,
-        /// Branch to check out or create.
+        /// Branch to create, or to check out when --existing is set.
         #[arg(short, long)]
         branch: Option<String>,
         /// Starting point when creating a new branch.
         #[arg(short = 'B', long, default_value = "HEAD")]
         base: String,
-        /// Reuse an existing branch instead of creating a new one.
+        /// Require and reuse an existing branch instead of creating a new one.
         #[arg(long)]
         existing: bool,
         /// Directory inside the repo to open for this worktree. Defaults to the current relative directory.
