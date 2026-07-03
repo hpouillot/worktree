@@ -8,6 +8,7 @@ mod worktree;
 use anyhow::{Context, Result};
 use clap::Parser;
 use cli::{Cli, Commands};
+use commands::{CommandContext, CreateOptions, OpenOptions};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -19,6 +20,11 @@ fn main() -> Result<()> {
     let cwd = std::env::current_dir().context("read current directory")?;
     let current_worktree_root = worktree::current_worktree_root(&cwd)?;
     let repo_root = worktree::primary_worktree(&cwd)?;
+    let ctx = CommandContext {
+        repo_root: &repo_root,
+        current_worktree_root: &current_worktree_root,
+        cwd: &cwd,
+    };
 
     match cli.command {
         Commands::Init => unreachable!(),
@@ -30,15 +36,15 @@ fn main() -> Result<()> {
             root,
             no_open,
         } => commands::create(
-            &repo_root,
-            &current_worktree_root,
-            &cwd,
-            &name,
-            branch.as_deref(),
-            &base,
-            existing,
-            root.as_deref(),
-            !no_open,
+            &ctx,
+            CreateOptions {
+                name: &name,
+                branch: branch.as_deref(),
+                base: &base,
+                existing,
+                root: root.as_deref(),
+                open_after_create: !no_open,
+            },
         ),
         Commands::List { all } => commands::list(&repo_root, all),
         Commands::Open {
@@ -49,15 +55,15 @@ fn main() -> Result<()> {
             no_rename,
             pin,
         } => commands::open(
-            &repo_root,
-            &current_worktree_root,
-            &cwd,
-            &target,
-            command.as_deref(),
-            title.as_deref(),
-            root.as_deref(),
-            no_rename,
-            pin,
+            &ctx,
+            OpenOptions {
+                target: &target,
+                command: command.as_deref(),
+                title: title.as_deref(),
+                root: root.as_deref(),
+                no_rename,
+                pin,
+            },
         ),
         Commands::Path { target } => commands::path(&repo_root, &target),
         Commands::Merge {

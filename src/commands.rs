@@ -14,6 +14,30 @@ use crate::worktree::{
     validate_branch, validate_name, worktree_for_branch, worktrees, WorktreeEntry,
 };
 
+pub struct CommandContext<'a> {
+    pub repo_root: &'a Path,
+    pub current_worktree_root: &'a Path,
+    pub cwd: &'a Path,
+}
+
+pub struct CreateOptions<'a> {
+    pub name: &'a str,
+    pub branch: Option<&'a str>,
+    pub base: &'a str,
+    pub existing: bool,
+    pub root: Option<&'a Path>,
+    pub open_after_create: bool,
+}
+
+pub struct OpenOptions<'a> {
+    pub target: &'a str,
+    pub command: Option<&'a str>,
+    pub title: Option<&'a str>,
+    pub root: Option<&'a Path>,
+    pub no_rename: bool,
+    pub pin: bool,
+}
+
 pub fn print_shell_init() {
     println!(
         r#"wt() {{
@@ -28,17 +52,21 @@ pub fn print_shell_init() {
     );
 }
 
-pub fn create(
-    repo_root: &Path,
-    current_worktree_root: &Path,
-    cwd: &Path,
-    name: &str,
-    branch: Option<&str>,
-    base: &str,
-    existing: bool,
-    root: Option<&Path>,
-    open_after_create: bool,
-) -> Result<()> {
+pub fn create(ctx: &CommandContext<'_>, options: CreateOptions<'_>) -> Result<()> {
+    let CommandContext {
+        repo_root,
+        current_worktree_root,
+        cwd,
+    } = *ctx;
+    let CreateOptions {
+        name,
+        branch,
+        base,
+        existing,
+        root,
+        open_after_create,
+    } = options;
+
     validate_name(name)?;
     let branch = branch.unwrap_or(name);
     validate_branch(branch)?;
@@ -154,17 +182,21 @@ pub fn list(repo_root: &Path, all: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn open(
-    repo_root: &Path,
-    current_worktree_root: &Path,
-    cwd: &Path,
-    target: &str,
-    command: Option<&str>,
-    title: Option<&str>,
-    root: Option<&Path>,
-    no_rename: bool,
-    pin: bool,
-) -> Result<()> {
+pub fn open(ctx: &CommandContext<'_>, options: OpenOptions<'_>) -> Result<()> {
+    let CommandContext {
+        repo_root,
+        current_worktree_root,
+        cwd,
+    } = *ctx;
+    let OpenOptions {
+        target,
+        command,
+        title,
+        root,
+        no_rename,
+        pin,
+    } = options;
+
     let entry = find_worktree(repo_root, target)?;
     let root = resolve_open_root(repo_root, current_worktree_root, cwd, &entry, root)?;
     let open_path = open_path_for_root(&entry.path, root.as_deref())?;
